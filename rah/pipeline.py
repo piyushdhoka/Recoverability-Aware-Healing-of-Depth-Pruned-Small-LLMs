@@ -1,6 +1,8 @@
 """Glue shared by the stage scripts: loading data, building pruned models, and one heal+evaluate run."""
 import argparse
 import gc
+import os
+import sys
 
 import torch
 
@@ -64,12 +66,30 @@ def fresh_pruned(cfg, spec: PruneSpec):
     return prune_model(model, spec)
 
 
+MORE_WORK_EXIT = 3          # exit code meaning "job limit reached, restart me" (see scripts/run_all.ps1)
+_jobs_done = 0
+
+
+def _yield_if_job_limit():
+    """GPU memory fragments across repeated heal jobs in one process (CUDA OOM after ~5 jobs on 8 GB).
+    With RAH_MAX_JOBS=N the process exits after N new jobs and the runner restarts it with clean memory."""
+    limit = int(os.environ.get("RAH_MAX_JOBS", "0"))
+    if limit and _jobs_done >= limit:
+        log.info(f"job limit {limit} reached; exiting so the runner restarts with fresh GPU memory")
+        sys.exit(MORE_WORK_EXIT)
+
+
 def heal_and_evaluate(cfg, p, tok, spec: PruneSpec, tokens_per_pool: dict, scope: str, seed: int,
                       split: str, out_path, tokenized: dict, tag: dict) -> dict:
     """Load a fresh pruned model, heal it with the given mixture/scope, evaluate, save. Resumable."""
+    global _jobs_done
     if out_path.exists():
         log.info(f"skip (done): {out_path.relative_to(p['results'].parent.parent)}")
         return read_json(out_path)
+    _yield_if_job_limit()
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     set_seed(seed)
     model = fresh_pruned(cfg, spec)
     mix = build_mixture(tokenized, tokens_per_pool, seed)
@@ -82,6 +102,7 @@ def heal_and_evaluate(cfg, p, tok, spec: PruneSpec, tokens_per_pool: dict, scope
               "train": train_info, "summary": ev["summary"], "eval_seconds": ev["seconds"],
               "records": ev["records"]}
     write_json(out_path, result)
+    _jobs_done += 1
     del model
     gc.collect()
     if torch.cuda.is_available():
