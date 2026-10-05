@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Run the whole pipeline for one model (resumable). Usage: bash scripts/run_all.sh qwen|llama|smollm [from_stage_index]
-# At most 4 heal jobs per python process (GPU memory fragments across jobs); exit code 3 = restart me.
+# One heal job per python process (GPU memory fragments across jobs); exit code 3 = restart me.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 MODEL="$1"; FROM="${2:-0}"
-export RAH_MAX_JOBS="${RAH_MAX_JOBS:-4}" PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8
+export RAH_MAX_JOBS="${RAH_MAX_JOBS:-1}" PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8
 STAGES=(00_check_env 01_build_eval 02_build_pools 03_teacher 04_diagnose 05_pilots 06_fit_allocate 07_main)
 for ((i = FROM; i < ${#STAGES[@]}; i++)); do
   failures=0

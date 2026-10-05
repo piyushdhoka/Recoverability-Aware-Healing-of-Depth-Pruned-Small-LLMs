@@ -9,9 +9,9 @@ $ErrorActionPreference = "Continue"
 $env:PYTHONUNBUFFERED = "1"
 $env:PYTHONIOENCODING = "utf-8"
 $env:HF_HUB_DISABLE_SYMLINKS_WARNING = "1"
-# At most 4 heal jobs per python process: GPU memory fragments across jobs (CUDA OOM on 8 GB otherwise).
+# One heal job per python process: GPU memory is not fully released between jobs (CUDA OOM on 8 GB).
 # The stage exits with code 3 ("more work") and is restarted with fresh memory; finished jobs are skipped.
-$env:RAH_MAX_JOBS = "4"
+$env:RAH_MAX_JOBS = "1"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 $stages = @("00_check_env", "01_build_eval", "02_build_pools", "03_teacher", "04_diagnose",
             "05_pilots", "06_fit_allocate", "07_main")
