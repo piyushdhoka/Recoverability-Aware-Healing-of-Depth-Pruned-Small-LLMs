@@ -66,6 +66,28 @@ def test_curves_and_scope_choice():
     assert A.best_scope_per_capability(pilots, CAPS) == {"fmt": "last_k", "math": "all_lora"}
 
 
+def test_trust_region_caps_each_pool_and_keeps_budget():
+    m = truth()
+    B = 1e6
+    t = A.rah(m, B, "sum", max_per_pool=6e5)
+    assert abs(sum(t.values()) - B) < 1e-6 * B
+    assert max(t.values()) <= 6e5 + 1e-3
+    t2 = A.rah(m, B, "sum", max_per_pool=1e5)          # infeasible cap -> relaxed to B/n
+    assert abs(sum(t2.values()) - B) < 1e-6 * B and max(t2.values()) <= B / 2 + 1e-3
+
+
+def test_project_onto_capped_simplex():
+    f = A._project(np.array([0.9, 0.1, 0.0]), ub=0.5)
+    assert abs(f.sum() - 1) < 1e-9 and f.max() <= 0.5 + 1e-12 and f.min() >= 0
+
+
+def test_tau_lower_bound_follows_smallest_pilot():
+    m = truth()
+    m.tau["fmt"] = 1e3                                   # truly faster than any pilot can resolve
+    fit = fit_recovery(m.r0, pilots_from(m, budgets=(3e4, 1e5, 3e5)), CAPS, POOLS, OWN, tau_min_frac=0.1)
+    assert fit.tau["fmt"] >= 3e3 - 1e-6
+
+
 def test_damage_proportional_degenerates_to_uniform():
     t = A.damage_proportional({"fmt": 1.0, "math": 1.0}, OWN, POOLS, 100)
     assert t == {"fmt": 50, "math": 50}

@@ -37,12 +37,20 @@ def main():
         scope_pilots[scope] = finite(retention(res["summary"], base_dev, caps))
 
     fc = cfg["fit"]
+    tmf = fc["tau_min_frac"]
     fits = {
-        "exp": fit_recovery(r0, pilots, caps, pools, own, "exp", fc["transfer_ridge"], fc["max_ceiling"]),
-        "hyp": fit_recovery(r0, pilots, caps, pools, own, "hyp", fc["transfer_ridge"], fc["max_ceiling"]),
+        "exp": fit_recovery(r0, pilots, caps, pools, own, "exp", fc["transfer_ridge"], fc["max_ceiling"],
+                            tau_min_frac=tmf),
+        "hyp": fit_recovery(r0, pilots, caps, pools, own, "hyp", fc["transfer_ridge"], fc["max_ceiling"],
+                            tau_min_frac=tmf),
         "no_transfer": fit_recovery(r0, pilots, caps, pools, own, fc["curve"], fc["transfer_ridge"],
-                                    fc["max_ceiling"], use_transfer=False),
+                                    fc["max_ceiling"], use_transfer=False, tau_min_frac=tmf),
     }
+    # trust region: never give a pool more than trust_factor x the largest budget it was piloted at
+    cap = fc["trust_factor"] * max(cfg["pilots"]["budgets"])
+
+    def R(model, budget, objective="sum"):
+        return A.rah(model, budget, objective, max_per_pool=cap)
     main_fit = fits[fc["curve"]]
     write_json(p["results"] / "fit" / "recovery.json", {k: v.to_dict() for k, v in fits.items()})
     write_json(p["results"] / "fit" / "pilot_gains.json", pilot_gain_table(r0, pilots, caps))
@@ -62,12 +70,12 @@ def main():
     alloc = {
         "uniform": {"tokens": A.uniform(pools, B), "scope": std},
         "damage_prop": {"tokens": A.damage_proportional(r0, own, pools, B), "scope": std},
-        "rah_sum": {"tokens": A.rah(main_fit, B, "sum"), "scope": scope_sum},
-        "rah_maxmin": {"tokens": A.rah(main_fit, B, "maxmin"), "scope": scope_mm},
+        "rah_sum": {"tokens": R(main_fit, B, "sum"), "scope": scope_sum},
+        "rah_maxmin": {"tokens": R(main_fit, B, "maxmin"), "scope": scope_mm},
         "last_k_uniform": {"tokens": A.uniform(pools, B), "scope": "last_k"},
-        "rah_no_transfer": {"tokens": A.rah(fits["no_transfer"], B, "sum"), "scope": scope_sum},
-        "rah_no_scope": {"tokens": A.rah(main_fit, B, "sum"), "scope": std},
-        "rah_hyp": {"tokens": A.rah(fits["hyp"], B, "sum"), "scope": scope_sum},
+        "rah_no_transfer": {"tokens": R(fits["no_transfer"], B, "sum"), "scope": scope_sum},
+        "rah_no_scope": {"tokens": R(main_fit, B, "sum"), "scope": std},
+        "rah_hyp": {"tokens": R(fits["hyp"], B, "sum"), "scope": scope_sum},
     }
 
     # RAH-proxy: needs the OTHER model family's fitted curves and proxy signal (synced via git).
@@ -78,7 +86,7 @@ def main():
             other_fit = RecoveryModel.from_dict(read_json(rec)[fc["curve"]])
             mapping = calibrate_mapping(other_fit, read_json(dn))
             pm = proxy_model(r0, read_json(diag / "proxy_dnll.json"), mapping, caps, pools, own, fc["curve"], fc["max_ceiling"])
-            alloc["rah_proxy"] = {"tokens": A.rah(pm, B, "sum"), "scope": std, "calibrated_on": od.name,
+            alloc["rah_proxy"] = {"tokens": R(pm, B, "sum"), "scope": std, "calibrated_on": od.name,
                                   "mapping": mapping}
             break
     if "rah_proxy" not in alloc:
@@ -87,7 +95,7 @@ def main():
     sweep = {}
     for b in cfg["main"]["budget_sweep"]:
         sweep[str(b)] = {"uniform": {"tokens": A.uniform(pools, b), "scope": std},
-                         "rah_sum": {"tokens": A.rah(main_fit, b, "sum"), "scope": scope_sum}}
+                         "rah_sum": {"tokens": R(main_fit, b, "sum"), "scope": scope_sum}}
     write_json(p["results"] / "fit" / "allocations.json",
                {"budget": B, "methods": alloc, "budget_sweep": sweep, "scope_pilots": scope_pilots,
                 "best_scope_per_capability": A.best_scope_per_capability(scope_pilots, caps),

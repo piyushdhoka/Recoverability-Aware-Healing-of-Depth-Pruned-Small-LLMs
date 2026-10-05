@@ -37,10 +37,13 @@ def _starts(n: int, seed: int, extra: int = 8):
 
 
 def rah(model: RecoveryModel, budget: float, objective: str = "sum", weights: dict | None = None,
-        seed: int = 0) -> dict:
+        seed: int = 0, max_per_pool: float | None = None) -> dict:
+    """max_per_pool: trust region, at most this many tokens per pool (relaxed to budget/n if infeasible),
+    so the optimiser never relies on curve extrapolation far beyond the piloted budgets."""
     pools, caps = model.pools, model.caps
     w = np.array([(weights or {}).get(c, 1.0) for c in caps])
     n = len(pools)
+    ub = 1.0 if max_per_pool is None else min(1.0, max(max_per_pool, budget / n) / budget)
 
     def pred(f):
         r = model.predict({p: budget * fi for p, fi in zip(pools, f)})
@@ -49,24 +52,40 @@ def rah(model: RecoveryModel, budget: float, objective: str = "sum", weights: di
     simplex = {"type": "eq", "fun": lambda z: np.sum(z[:n]) - 1.0}
     best = None
     for f0 in _starts(n, seed):
+        f0 = _project(f0, ub)
         if objective == "sum":
             res = minimize(lambda f: -float(w @ pred(f)), f0, method="SLSQP",
-                           bounds=[(0.0, 1.0)] * n, constraints=[simplex])
-            val, f = -res.fun, res.x
+                           bounds=[(0.0, ub)] * n, constraints=[simplex])
+            f = res.x
         elif objective == "maxmin":
             z0 = np.concatenate([f0, [pred(f0).min()]])
             cons = [simplex, {"type": "ineq", "fun": lambda z: pred(z[:n]) - z[n]}]
-            res = minimize(lambda z: -z[n], z0, method="SLSQP", bounds=[(0.0, 1.0)] * n + [(None, None)],
+            res = minimize(lambda z: -z[n], z0, method="SLSQP", bounds=[(0.0, ub)] * n + [(None, None)],
                            constraints=cons)
             f = res.x[:n]
-            val = float(pred(np.clip(f, 0, 1)).min())
         else:
             raise ValueError(objective)
-        f = np.clip(f, 0.0, None)
-        f = f / f.sum() if f.sum() > 0 else np.full(n, 1.0 / n)
+        f = _project(f, ub)
+        p = pred(f)
+        val = float(w @ p) if objective == "sum" else float(p.min())
         if best is None or val > best[0] + 1e-12:
             best = (val, f)
     return {p: float(budget * fi) for p, fi in zip(pools, best[1])}
+
+
+def _project(f, ub: float, iters: int = 50):
+    """Project onto {f >= 0, f <= ub, sum f = 1} by alternating clip and rescale of the free mass."""
+    f = np.clip(np.asarray(f, dtype=float), 0.0, ub)
+    for _ in range(iters):
+        gap = 1.0 - f.sum()
+        if abs(gap) < 1e-12:
+            break
+        free = (f < ub - 1e-12) if gap > 0 else (f > 1e-12)
+        if not free.any():
+            break
+        f[free] += gap / free.sum()
+        f = np.clip(f, 0.0, ub)
+    return f
 
 
 def choose_scope(scope_pilots: dict, caps: list, objective: str = "sum", weights: dict | None = None) -> str:

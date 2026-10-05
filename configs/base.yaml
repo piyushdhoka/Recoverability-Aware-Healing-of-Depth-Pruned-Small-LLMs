@@ -46,7 +46,7 @@ healing:
   budget_tokens: 1000000
 
 pilots:
-  budgets: [100000, 300000]
+  budgets: [30000, 100000, 300000]   # 3 points per pool: 2 could not identify recovery speed (Llama pilots)
   scope: all_lora             # fixed scope for recovery pilots
   scope_budget: 300000        # uniform-mixture scope pilots
   scopes: [all_lora, cut_lora, last_k]
@@ -55,6 +55,8 @@ fit:
   curve: exp                  # exp: a(1-e^{-x/tau});  hyp: a*x/(x+tau)
   transfer_ridge: 0.05
   max_ceiling: 1.2            # retention cap used to bound a_c
+  tau_min_frac: 0.1           # tau >= 0.1 x smallest pilot budget (no recovery speed faster than the data shows)
+  trust_factor: 2.0           # no pool gets more than 2 x its largest pilot budget (no curve extrapolation)
 
 main:
   seeds: [0, 1, 2]

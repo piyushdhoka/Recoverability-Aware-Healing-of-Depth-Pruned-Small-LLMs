@@ -53,10 +53,15 @@ class RecoveryModel:
 
 
 def fit_recovery(r0: dict, pilots: list[dict], caps: list, pools: list, own: dict, kind: str = "exp",
-                 ridge: float = 0.05, max_ceiling: float = 1.2, use_transfer: bool = True) -> RecoveryModel:
-    """pilots: [{"pool": p, "budget": tokens, "retention": {cap: r}}, ...] (evaluated on dev items)."""
+                 ridge: float = 0.05, max_ceiling: float = 1.2, use_transfer: bool = True,
+                 tau_min_frac: float = 0.1) -> RecoveryModel:
+    """pilots: [{"pool": p, "budget": tokens, "retention": {cap: r}}, ...] (evaluated on dev items).
+
+    tau is bounded below by tau_min_frac x the smallest pilot budget: a recovery faster than anything the
+    pilots can resolve is not identifiable, and an unbounded tau->0 makes the optimiser treat that skill as
+    already saturated."""
     budgets = np.array([pl["budget"] for pl in pilots], dtype=float)
-    lo_tau, hi_tau = budgets.min() / 50.0, budgets.max() * 200.0
+    lo_tau, hi_tau = budgets.min() * tau_min_frac, budgets.max() * 200.0
     model = RecoveryModel(caps=caps, pools=pools, own=own, r0=r0, kind=kind, max_ceiling=max_ceiling)
     for c in caps:
         others = [p for p in pools if p != own[c]] if use_transfer else []
