@@ -19,7 +19,7 @@ Open **PowerShell** in a folder **outside OneDrive** (for example `C:\work`). Vi
 
 ```powershell
 # 1. Get the code
-git clone <REPO_URL> rah-healing
+git clone https://github.com/piyushdhoka/Recoverability-Aware-Healing-of-Depth-Pruned-Small-LLMs.git rah-healing
 cd rah-healing
 
 # 2. Create and activate a virtual environment
