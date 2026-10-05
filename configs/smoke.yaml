@@ -1,0 +1,40 @@
+# End-to-end smoke test with a tiny random model and fixture data. Checks wiring only; numbers are meaningless.
+name: smoke
+model_id: hf-internal-testing/tiny-random-LlamaForCausalLM
+device_note: any (CPU ok)
+dtype: float32
+prune_main: 1
+prune_light: 1
+fixture_data: true
+
+data:
+  eval_test: {fmt: 4, tool: 4, inst: 4, math: 4, safe: 4, know: 4}
+  eval_dev:  {fmt: 3, tool: 3, inst: 3, math: 3, safe: 3, know: 3}
+  pool_prompts: 6
+  pool_keep: 6
+eval:
+  batch_size: 4
+  max_new_tokens: {fmt: 8, tool: 8, inst: 8, math: 8, safe: 8}
+teacher:
+  batch_size: 4
+  max_new_tokens: {fmt: 8, tool: 8, inst: 8, math: 8, safe: 8, general: 8}
+pruning:
+  calib_examples: 6
+  calib_max_len: 32
+healing:
+  seq_len: 512
+  micro_batch: 2
+  grad_accum: 1
+  last_k: 1
+  gradient_checkpointing: false
+  budget_tokens: 600
+pilots:
+  budgets: [150, 300]
+  scope_budget: 300
+main:
+  seeds: [0]
+  budget_sweep: [300]
+proxy:
+  examples_per_pool: 2
+stats:
+  n_boot: 50

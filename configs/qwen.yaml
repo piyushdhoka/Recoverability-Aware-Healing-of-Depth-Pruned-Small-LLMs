@@ -1,0 +1,6 @@
+# Runs on the RTX 4070 laptop.
+name: qwen
+model_id: Qwen/Qwen2.5-1.5B-Instruct
+device_note: RTX 4070 Laptop
+prune_main: 7      # 28 blocks -> 21 (25%)
+prune_light: 4     # 28 blocks -> 24 (diagnosis only)

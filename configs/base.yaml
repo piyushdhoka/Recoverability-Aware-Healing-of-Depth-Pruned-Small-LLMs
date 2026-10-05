@@ -1,0 +1,70 @@
+# Shared settings for every model. Model files (qwen.yaml, llama.yaml) override keys here.
+seed: 42
+dtype: bfloat16
+
+# Capabilities we track and the healing pool that "owns" each one.
+capabilities: [fmt, tool, inst, math, safe, know]
+pools: [fmt, tool, inst, math, safe, general]
+own_pool: {fmt: fmt, tool: tool, inst: inst, math: math, safe: safe, know: general}
+
+data:
+  # test = final evaluation items, dev = items used by pilots/curve fitting (disjoint from test)
+  eval_test: {fmt: 150, tool: 200, inst: 300, math: 200, safe: 200, know: 300}
+  eval_dev:  {fmt: 60,  tool: 60,  inst: 60,  math: 60,  safe: 60,  know: 60}
+  pool_prompts: 1300          # generated per pool; filtered down to pool_keep after teacher QC
+  pool_keep: 1000
+  max_schema_chars: 2000
+  fmt_subset: Github_easy     # JSONSchemaBench subset (not glaive-derived, avoids overlap with pools)
+
+eval:
+  batch_size: 16
+  max_new_tokens: {fmt: 256, tool: 128, inst: 384, math: 256, safe: 64}
+  ece_bins: 10
+
+teacher:
+  batch_size: 16
+  max_new_tokens: {fmt: 256, tool: 128, inst: 384, math: 320, safe: 192, general: 320}
+
+pruning:
+  calib_examples: 128         # teacher-generated pool texts used for Block Influence
+  calib_max_len: 256
+
+healing:
+  seq_len: 512
+  micro_batch: 4
+  grad_accum: 4
+  lr_lora: 2.0e-4
+  lr_full: 2.0e-5
+  warmup_frac: 0.05
+  weight_decay: 0.0
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  lora_targets: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  last_k: 3
+  gradient_checkpointing: true
+  budget_tokens: 1000000
+
+pilots:
+  budgets: [100000, 300000]
+  scope: all_lora             # fixed scope for recovery pilots
+  scope_budget: 300000        # uniform-mixture scope pilots
+  scopes: [all_lora, cut_lora, last_k]
+
+fit:
+  curve: exp                  # exp: a(1-e^{-x/tau});  hyp: a*x/(x+tau)
+  transfer_ridge: 0.05
+  max_ceiling: 1.2            # retention cap used to bound a_c
+
+main:
+  seeds: [0, 1, 2]
+  core_methods: [uniform, damage_prop, rah_sum]       # run with all seeds
+  extra_methods: [rah_maxmin, rah_proxy, last_k_uniform, linear_patch]  # first seed only
+  ablations: [rah_no_transfer, rah_no_scope, rah_hyp]  # first seed only
+  budget_sweep: [250000, 4000000]                     # rah_sum vs uniform, first seed only
+
+proxy:
+  examples_per_pool: 50
+
+stats:
+  n_boot: 2000
