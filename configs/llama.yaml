@@ -4,5 +4,7 @@
 name: llama
 model_id: unsloth/Llama-3.2-1B-Instruct
 device_note: RTX 4060 Laptop
-prune_main: 4      # 16 blocks -> 12 (25%)
-prune_light: 2     # 16 blocks -> 14 (diagnosis only)
+# Pruning level calibrated in stage 04 (2026-10-05): removing 4 blocks (25%) left 5 of 6 capabilities at
+# chance, so damage could not discriminate skills. Kept as evidence in results/llama/diagnosis_k4/.
+prune_main: 2      # 16 blocks -> 14 (12.5%)
+prune_light: 1     # 16 blocks -> 15 (diagnosis only)

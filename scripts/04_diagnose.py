@@ -15,7 +15,7 @@ from rah.linear_patch import attach_patches, collect_span_states, fit_patches
 from rah.modeling import PruneSpec, get_blocks, load_model, prune_model
 from rah.pipeline import calib_batches, cli, load_eval, load_teacher, log, tokenizer
 from rah.proxy import mean_nll
-from rah.utils import timed, write_json
+from rah.utils import read_json, timed, write_json
 
 CHANCE = {"fmt": 0.0, "tool": 0.0, "inst": 0.0, "math": 0.0, "safe": 0.5, "know": 0.25}
 
@@ -34,6 +34,11 @@ def main():
     model = load_model(cfg["model_id"], cfg["dtype"])
     n_layers = len(get_blocks(model)[0])
     for split in ("test", "dev"):
+        cached = out / f"eval_base_{split}.json"   # unpruned scores don't depend on the pruning level
+        if cached.exists():
+            ev[f"base_{split}"] = read_json(cached)
+            log.info(f"M0 {split} eval: reusing {cached.name}")
+            continue
         with timed(log, f"M0 {split} eval"):
             ev[f"base_{split}"] = evaluate(model, tok, load_eval(p, cfg, split), cfg)
 
