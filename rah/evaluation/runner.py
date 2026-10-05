@@ -31,7 +31,8 @@ def score_know(model, tok, items: list[dict], batch_size: int) -> list[dict]:
     for s in range(0, len(prompts), batch_size):
         enc = tok(prompts[s:s + batch_size], return_tensors="pt", padding=True, add_special_tokens=False)
         enc = {k: v.to(model.device) for k, v in enc.items()}
-        logits = model(**enc, use_cache=False).logits[:, -1].float()   # left padding: last position is real
+        # left padding: last position is real; logits_to_keep=1 avoids a [batch, seq, vocab] tensor
+        logits = model(**enc, use_cache=False, logits_to_keep=1).logits[:, -1].float()
         probs_all = torch.softmax(logits, dim=-1)
         for j, it in enumerate(items[s:s + batch_size]):
             p = torch.stack([probs_all[j, ids].sum() for ids in letter_ids])
