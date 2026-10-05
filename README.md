@@ -25,8 +25,8 @@ git clone https://github.com/piyushdhoka/Recoverability-Aware-Healing-of-Depth-P
 cd rah-healing
 
 # 2. Create and activate a virtual environment
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 
 # 3. Install PyTorch (CUDA 12.1), then the pinned requirements
 pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
@@ -51,7 +51,7 @@ If downloads print a warning about **symlinks** on Windows, it is harmless. To h
 
 ```powershell
 cd rah-healing
-.\.venv\Scripts\Activate.ps1
+.\venv\Scripts\Activate.ps1
 git pull
 
 .\scripts\run_all.ps1 -Model qwen
@@ -81,7 +81,7 @@ No login step: the model downloads automatically from the public mirror.
 
 ```powershell
 cd rah-healing
-.\.venv\Scripts\Activate.ps1
+.\venv\Scripts\Activate.ps1
 git pull
 
 .\scripts\run_all.ps1 -Model llama
