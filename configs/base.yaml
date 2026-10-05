@@ -1,6 +1,7 @@
 # Shared settings for every model. Model files (qwen.yaml, llama.yaml) override keys here.
 seed: 42
 dtype: bfloat16
+gpu_memory_fraction: 0.92     # cap PyTorch's VRAM use; prevents silent spill into Windows shared memory
 
 # Capabilities we track and the healing pool that "owns" each one.
 capabilities: [fmt, tool, inst, math, safe, know]
@@ -31,7 +32,7 @@ pruning:
 
 healing:
   seq_len: 512
-  micro_batch: 4
+  micro_batch: 4              # 16 sequences per update; fits under gpu_memory_fraction (the spill was cache growth)
   grad_accum: 4
   lr_lora: 2.0e-4
   lr_full: 2.0e-5

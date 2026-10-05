@@ -23,6 +23,11 @@ def cli(description: str, extra=None):
     args = ap.parse_args()
     cfg = load_config(args.model)
     set_seed(cfg["seed"])
+    if torch.cuda.is_available() and cfg.get("gpu_memory_fraction"):
+        # On Windows the NVIDIA driver lets CUDA overflow into (slow) shared system memory instead of raising
+        # OOM, so PyTorch's caching allocator never frees cached blocks and grows far past VRAM. A hard cap
+        # makes the allocator free and reuse its cache at the limit instead of spilling.
+        torch.cuda.set_per_process_memory_fraction(float(cfg["gpu_memory_fraction"]))
     return args, cfg, paths(cfg)
 
 

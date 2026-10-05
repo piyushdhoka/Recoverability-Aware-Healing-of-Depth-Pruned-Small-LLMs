@@ -54,10 +54,16 @@ def mixture_tokens(mix: list[dict]) -> int:
     return sum(ex["n_tokens"] for ex in mix)
 
 
-def _collate(batch, pad_id):
+def _collate(batch, pad_id, multiple: int = 64):
+    """Right-pad to a multiple of `multiple` tokens so tensor shapes repeat and cached GPU blocks get reused."""
     ids = pad_sequence([torch.tensor(b["input_ids"]) for b in batch], batch_first=True, padding_value=pad_id)
     labels = pad_sequence([torch.tensor(b["labels"]) for b in batch], batch_first=True, padding_value=-100)
     mask = pad_sequence([torch.ones(len(b["input_ids"]), dtype=torch.long) for b in batch], batch_first=True)
+    extra = (-ids.shape[1]) % multiple
+    if extra:
+        ids = torch.nn.functional.pad(ids, (0, extra), value=pad_id)
+        labels = torch.nn.functional.pad(labels, (0, extra), value=-100)
+        mask = torch.nn.functional.pad(mask, (0, extra), value=0)
     return ids, labels, mask
 
 
