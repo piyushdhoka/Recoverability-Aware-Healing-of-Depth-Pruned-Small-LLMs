@@ -283,5 +283,5 @@ Apply in order until the plan fits:
 ## 11. Decisions needed from you
 
 1. Approve the **5-week timeline and about 19 GPU-hour budget**, or ask for the 4-week variant: drop the budget sweep and optional Gemma, use 2 seeds, about 12 GPU-hours.
-2. Confirm the **model choice** (Qwen2.5-1.5B + Llama-3.2-1B). The official Llama/Gemma checkpoints need a Hugging Face login; otherwise we use the ungated mirrors as before.
+2. **Model choice (decided):** Qwen2.5-1.5B-Instruct (official repo) + Llama-3.2-1B-Instruct, loaded from the ungated mirror `unsloth/Llama-3.2-1B-Instruct`. No Hugging Face account is needed on either laptop; the mirror is disclosed in the paper.
 3. Confirm the **project folder** for code and results (default: this `rah-healing` folder).

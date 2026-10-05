@@ -1,8 +1,8 @@
 # Runs on the RTX 4060 laptop.
-# Official repo is gated: run `huggingface-cli login` after accepting the licence, or set
-# model_id to an ungated mirror (e.g. unsloth/Llama-3.2-1B-Instruct) and disclose it in the paper.
+# Ungated public mirror of meta-llama/Llama-3.2-1B-Instruct (same architecture: 16 blocks, d=2048):
+# no Hugging Face account, token or CLI login needed. Disclose the mirror in the paper.
 name: llama
-model_id: meta-llama/Llama-3.2-1B-Instruct
+model_id: unsloth/Llama-3.2-1B-Instruct
 device_note: RTX 4060 Laptop
 prune_main: 4      # 16 blocks -> 12 (25%)
 prune_light: 2     # 16 blocks -> 14 (diagnosis only)

@@ -427,7 +427,7 @@ Math is the most damaged but nearly unrecoverable (small ceiling, slow). Formatt
 | Llama-3.2-1B-Instruct | 16 | remove 4 | remove 2 | RTX 4060 laptop |
 
 - Gemma-2-2B-it is deferred: an optional replication only if time remains.
-- The official Llama checkpoint needs a Hugging Face login; otherwise we use the ungated mirror and disclose it.
+- Llama is loaded from `unsloth/Llama-3.2-1B-Instruct`, an ungated public mirror of the official `meta-llama` checkpoint (same architecture: 16 blocks, $d=2048$). No Hugging Face account is needed, and the mirror is disclosed in the paper. Qwen is loaded from the official `Qwen/Qwen2.5-1.5B-Instruct` repository, which is not gated.
 - Blocks are selected by BI on a general calibration set (shared code from the LB-BI paper).
 - **The pruning level is confirmed in week 2** so that no capability sits at its chance floor. This is the main lesson of our previous paper, where zero-shot Belebele collapsed to chance and became uninformative.
 
