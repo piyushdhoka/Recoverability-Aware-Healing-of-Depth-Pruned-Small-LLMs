@@ -52,12 +52,15 @@ def analyze_model(name: str, out_dir, n_boot: int):
                 rt, lo, hi = retention_ci(list(im.values()), base[c], n_boot)
                 row[c], row[f"{c}_lo"], row[f"{c}_hi"] = rt, lo, hi
         vals = [row[c] for c in caps if c in row]
+        # Primary (pre-registered 2026-10-05, before RAH test results): mean of min(r_c, 1) + worst case.
+        # Exceeding the unpruned model is not "recovery", and one noisy skill (fmt) must not dominate the mean.
+        row["mean_ret_capped"] = float(np.mean(np.minimum(vals, 1.0)))
         row["mean_ret"], row["worst_ret"] = float(np.mean(vals)), float(np.min(vals))
         side = [r["summary"] for r in rs]
         for k in ("safe_over_refusal", "know_ece"):
             row[k] = float(np.nanmean([s.get(k, float("nan")) for s in side]))
         rows.append(row)
-    main_df = pd.DataFrame(rows).sort_values("mean_ret", ascending=False)
+    main_df = pd.DataFrame(rows).sort_values("mean_ret_capped", ascending=False)
 
     # paired tests: rah_sum vs each other method, per capability (items averaged over seeds)
     tests = []

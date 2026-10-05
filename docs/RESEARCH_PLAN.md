@@ -145,6 +145,11 @@ About 1,000 prompts each, kept separate from the evaluation sets. Targets are re
 ### 5.5 Metrics and statistics
 
 - **Metrics:** per-capability retention; mean retention; worst-case retention; retention gained per 1M tokens; ECE and over-refusal as side-effect checks.
+- **Primary metrics (fixed 2026-10-05, before any RAH test result existed):**
+  - **capped mean retention**, the mean over capabilities of min(r_c, 1);
+  - **worst-case retention**, min over c of r_c.
+
+  Retention above 1 means the model is better than the original, not more recovered. Seed-to-seed variance on fmt (about ±0.5) would otherwise dominate an uncapped mean. The uncapped mean is reported as a secondary metric.
 - **Bootstrap:** 95% confidence intervals over items, with seeds pooled.
 - **Paired tests:** RAH vs each baseline on the same items.
 - **H1:** Spearman correlation of damage vs *a_c*.
