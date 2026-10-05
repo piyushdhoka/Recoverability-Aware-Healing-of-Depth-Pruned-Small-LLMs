@@ -100,7 +100,7 @@ def heal_and_evaluate(cfg, p, tok, spec: PruneSpec, tokens_per_pool: dict, scope
     mix = build_mixture(tokenized, tokens_per_pool, seed)
     model, lr, desc = apply_scope(model, scope, cfg, spec.cut_adjacent())
     log.info(f"heal {tag} scope={desc} examples={len(mix)} tokens={mixture_tokens(mix)}")
-    train_info = train(model, tok, mix, lr, cfg, seed, log)
+    train_info = train(model, tok, mix, lr, cfg, seed, log, scope=scope)
     model = finalize(model, scope, torch_dtype(cfg["dtype"]))
     ev = evaluate(model, tok, load_eval(p, cfg, split), cfg)
     result = {**tag, "scope": scope, "seed": seed, "split": split, "tokens_per_pool": tokens_per_pool,

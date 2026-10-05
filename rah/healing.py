@@ -101,7 +101,7 @@ def apply_scope(model, scope: str, cfg: dict, cut_adjacent: list[int]):
 
 
 # --------------------------------------------------------------------------- training
-def train(model, tok, mix: list[dict], lr: float, cfg: dict, seed: int, log=None) -> dict:
+def train(model, tok, mix: list[dict], lr: float, cfg: dict, seed: int, log=None, scope: str | None = None) -> dict:
     hcfg = cfg["healing"]
     torch.manual_seed(seed)
     device = next(model.parameters()).device
@@ -114,6 +114,12 @@ def train(model, tok, mix: list[dict], lr: float, cfg: dict, seed: int, log=None
             model.enable_input_require_grads()
     opt = torch.optim.AdamW(params, lr=lr, weight_decay=hcfg["weight_decay"])
     mb, accum = hcfg["micro_batch"], hcfg["grad_accum"]
+    if scope == "last_k" and hcfg.get("micro_batch_last_k"):
+        # full fp32 training of k blocks + Adam states needs ~3 GB extra: halve the micro-batch and keep the
+        # same number of sequences per optimizer update
+        per_update = mb * accum
+        mb = hcfg["micro_batch_last_k"]
+        accum = max(1, per_update // mb)
     steps = max(1, math.ceil(len(mix) / (mb * accum)))
     warm = max(1, int(hcfg["warmup_frac"] * steps))
     sched = torch.optim.lr_scheduler.LambdaLR(

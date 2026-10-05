@@ -34,6 +34,7 @@ healing:
   seq_len: 512
   micro_batch: 4              # 16 sequences per update; fits under gpu_memory_fraction (the spill was cache growth)
   grad_accum: 4
+  micro_batch_last_k: 2       # last_k scope trains full fp32 blocks + Adam (~3 GB): 2 x 8 = same 16 seq/update
   lr_lora: 2.0e-4
   lr_full: 2.0e-5
   warmup_frac: 0.05
