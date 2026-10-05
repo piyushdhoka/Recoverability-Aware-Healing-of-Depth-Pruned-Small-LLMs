@@ -140,7 +140,7 @@ def figures(name, out_dir, caps, dmg, fit, main_df, res):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--models", nargs="*", default=["qwen", "llama"])
+    ap.add_argument("--models", nargs="*", default=["qwen", "llama", "smollm"])
     ap.add_argument("--n_boot", type=int, default=2000)
     args = ap.parse_args()
     out = REPO / "results" / "analysis"

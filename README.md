@@ -6,8 +6,11 @@ Two models run on two laptops at the same time.
 |---|---|---|---|
 | **Qwen2.5-1.5B-Instruct** | `Qwen/Qwen2.5-1.5B-Instruct` | **Other laptop (RTX 4070)** | `qwen` |
 | **Llama-3.2-1B-Instruct** | `unsloth/Llama-3.2-1B-Instruct` (public mirror of the official weights) | **This laptop (RTX 4060)** | `llama` |
+| **SmolLM2-1.7B-Instruct** | `HuggingFaceTB/SmolLM2-1.7B-Instruct` (ungated, 24 blocks) | **This laptop (RTX 4060)**, after Llama | `smollm` |
 
 Never run `qwen` on this laptop or `llama` on the other laptop.
+
+`smollm` is the third model family. Its pruning level in `configs/smollm.yaml` is an uncalibrated starting guess: run stage 4 (`python scripts/04_diagnose.py --model smollm`) first, check that capabilities are damaged but not all at chance, and lower `prune_main` if they are.
 
 **No Hugging Face account, token or `huggingface-cli login` is needed on either laptop.** Both models and every dataset are public and download automatically on the first run.
 

@@ -15,7 +15,7 @@ log = get_logger()
 
 def cli(description: str, extra=None):
     ap = argparse.ArgumentParser(description=description)
-    ap.add_argument("--model", required=True, help="config name: qwen | llama | smoke")
+    ap.add_argument("--model", required=True, help="config name: qwen | llama | smollm | smoke")
     if extra:
         extra(ap)
     args = ap.parse_args()

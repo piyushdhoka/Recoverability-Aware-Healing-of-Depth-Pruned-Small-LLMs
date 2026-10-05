@@ -1,0 +1,9 @@
+# Third model family (Hugging Face's own SmolLM2). Llama-style architecture, 24 blocks, d=2048, ungated:
+# no Hugging Face account, token or CLI login needed.
+name: smollm
+model_id: HuggingFaceTB/SmolLM2-1.7B-Instruct
+device_note: RTX 4060 Laptop
+# Starting guesses, NOT yet calibrated. Run stage 04 first (python scripts/04_diagnose.py --model smollm) and
+# check that capabilities are damaged but not all at chance; lower prune_main if they are (as done for Llama).
+prune_main: 4      # 24 blocks -> 20 (16.7%)
+prune_light: 2     # 24 blocks -> 22 (diagnosis only)

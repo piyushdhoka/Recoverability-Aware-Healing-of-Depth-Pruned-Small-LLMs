@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run the whole pipeline for one model (resumable). Usage: bash scripts/run_all.sh qwen|llama [from_stage_index]
+# Run the whole pipeline for one model (resumable). Usage: bash scripts/run_all.sh qwen|llama|smollm [from_stage_index]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 MODEL="$1"; FROM="${2:-0}"
