@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import random
+import sys
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -21,7 +22,8 @@ def set_seed(seed: int) -> None:
 def get_logger(name: str = "rah") -> logging.Logger:
     logger = logging.getLogger(name)
     if not logger.handlers:
-        h = logging.StreamHandler()
+        # stdout, not stderr: Windows PowerShell 5.1 turns redirected stderr lines into terminating errors
+        h = logging.StreamHandler(sys.stdout)
         h.setFormatter(logging.Formatter("[%(asctime)s] %(message)s", "%H:%M:%S"))
         logger.addHandler(h)
         logger.setLevel(logging.INFO)
