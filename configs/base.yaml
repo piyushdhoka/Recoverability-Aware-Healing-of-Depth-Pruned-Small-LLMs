@@ -17,7 +17,7 @@ data:
   fmt_subset: Github_easy     # JSONSchemaBench subset (not glaive-derived, avoids overlap with pools)
 
 eval:
-  batch_size: 48              # 1-2B models leave an 8 GB GPU underused at 16
+  batch_size: 48              # kept fixed for consistency across all evaluations (may spill VRAM on 8 GB GPUs)
   max_new_tokens: {fmt: 256, tool: 128, inst: 384, math: 256, safe: 64}
   ece_bins: 10
 
