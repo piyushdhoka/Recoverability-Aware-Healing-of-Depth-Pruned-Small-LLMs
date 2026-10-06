@@ -7,3 +7,6 @@ device_note: RTX 4060 Laptop
 # check that capabilities are damaged but not all at chance; lower prune_main if they are (as done for Llama).
 prune_main: 4      # 24 blocks -> 20 (16.7%)
 prune_light: 2     # 24 blocks -> 22 (diagnosis only)
+
+main:
+  budget_sweep: []   # research plan: budget sweep on Qwen only
