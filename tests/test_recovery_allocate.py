@@ -88,6 +88,20 @@ def test_tau_lower_bound_follows_smallest_pilot():
     assert fit.tau["fmt"] >= 3e3 - 1e-6
 
 
+def test_pred_cap_redirects_budget_from_saturated_skill():
+    # fmt already at 1.0 but its curve "promises" 1.3; math is far below 1.0 and recovers slowly
+    m = RecoveryModel(caps=CAPS, pools=POOLS, own=OWN, r0={"fmt": 1.0, "math": 0.2}, max_ceiling=1.5)
+    m.a = {"fmt": 0.3, "math": 0.5}
+    m.tau = {"fmt": 3e5, "math": 5e5}
+    m.T = {"fmt": {"fmt": 1.0, "math": 0.0}, "math": {"fmt": 0.0, "math": 1.0}}
+    B = 1e6
+    uncapped = A.rah(m, B, "sum")
+    capped = A.rah(m, B, "sum", pred_cap=1.0)
+    assert uncapped["fmt"] > 0.3 * B                      # chases the >1.0 gain
+    assert capped["fmt"] < 0.05 * B and capped["math"] > 0.95 * B   # nothing to gain above 1.0 -> math
+    assert abs(sum(capped.values()) - B) < 1e-6 * B
+
+
 def test_damage_proportional_degenerates_to_uniform():
     t = A.damage_proportional({"fmt": 1.0, "math": 1.0}, OWN, POOLS, 100)
     assert t == {"fmt": 50, "math": 50}

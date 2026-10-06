@@ -76,6 +76,9 @@ def main():
         "rah_no_transfer": {"tokens": R(fits["no_transfer"], B, "sum"), "scope": scope_sum},
         "rah_no_scope": {"tokens": R(main_fit, B, "sum"), "scope": std},
         "rah_hyp": {"tokens": R(fits["hyp"], B, "sum"), "scope": scope_sum},
+        # pre-registered 2026-10-06 19:40 IST (before OLMo stage-7 results): objective capped at retention 1.0
+        "rah_capped": {"tokens": A.rah(main_fit, B, "sum", max_per_pool=cap, pred_cap=fc["objective_cap"]),
+                       "scope": scope_sum},
     }
 
     # RAH-proxy: needs the OTHER model family's fitted curves and proxy signal (synced via git).

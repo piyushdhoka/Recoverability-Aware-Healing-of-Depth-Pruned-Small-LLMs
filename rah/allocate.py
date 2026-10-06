@@ -37,9 +37,11 @@ def _starts(n: int, seed: int, extra: int = 8):
 
 
 def rah(model: RecoveryModel, budget: float, objective: str = "sum", weights: dict | None = None,
-        seed: int = 0, max_per_pool: float | None = None) -> dict:
+        seed: int = 0, max_per_pool: float | None = None, pred_cap: float | None = None) -> dict:
     """max_per_pool: trust region, at most this many tokens per pool (relaxed to budget/n if infeasible),
-    so the optimiser never relies on curve extrapolation far beyond the piloted budgets."""
+    so the optimiser never relies on curve extrapolation far beyond the piloted budgets.
+    pred_cap: if set, predicted retention above this value earns nothing in the objective (aligns the
+    optimiser with the capped-mean metric: exceeding the unpruned model is not "recovery")."""
     pools, caps = model.pools, model.caps
     w = np.array([(weights or {}).get(c, 1.0) for c in caps])
     n = len(pools)
@@ -49,12 +51,18 @@ def rah(model: RecoveryModel, budget: float, objective: str = "sum", weights: di
         r = model.predict({p: budget * fi for p, fi in zip(pools, f)})
         return np.array([r[c] for c in caps])
 
+    def value_sum(f):
+        p = pred(f)
+        if pred_cap is not None:
+            p = np.minimum(p, pred_cap)      # min(concave, const) is concave: problem stays well-behaved
+        return float(w @ p)
+
     simplex = {"type": "eq", "fun": lambda z: np.sum(z[:n]) - 1.0}
     best = None
     for f0 in _starts(n, seed):
         f0 = _project(f0, ub)
         if objective == "sum":
-            res = minimize(lambda f: -float(w @ pred(f)), f0, method="SLSQP",
+            res = minimize(lambda f: -value_sum(f), f0, method="SLSQP",
                            bounds=[(0.0, ub)] * n, constraints=[simplex])
             f = res.x
         elif objective == "maxmin":
@@ -66,8 +74,7 @@ def rah(model: RecoveryModel, budget: float, objective: str = "sum", weights: di
         else:
             raise ValueError(objective)
         f = _project(f, ub)
-        p = pred(f)
-        val = float(w @ p) if objective == "sum" else float(p.min())
+        val = value_sum(f) if objective == "sum" else float(pred(f).min())
         if best is None or val > best[0] + 1e-12:
             best = (val, f)
     return {p: float(budget * fi) for p, fi in zip(pools, best[1])}

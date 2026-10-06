@@ -9,3 +9,6 @@ device_note: RTX 4060 Laptop
 # (tool/fmt may be weak on a 1B OLMo-2).
 prune_main: 2      # 16 blocks -> 14 (12.5%)
 prune_light: 1     # 16 blocks -> 15 (diagnosis only)
+
+main:
+  budget_sweep: []   # research plan: budget sweep on Qwen only

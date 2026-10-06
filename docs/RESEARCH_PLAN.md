@@ -150,6 +150,7 @@ About 1,000 prompts each, kept separate from the evaluation sets. Targets are re
   - **worst-case retention**, min over c of r_c.
 
   Retention above 1 means the model is better than the original, not more recovered. Seed-to-seed variance on fmt (about ±0.5) would otherwise dominate an uncapped mean. The uncapped mean is reported as a secondary metric.
+- **Registered amendment (2026-10-06 19:40 IST, after Llama and SmolLM stage 7, before OLMo stage 7 results):** `rah_capped`. The original RAH objective maximises predicted retention up to the curve ceiling (1.2), so it spends budget on skills predicted to exceed 1.0 (SmolLM: 60% on inst to reach a predicted 1.14; OLMo: 54% on safe to reach 1.09), which the capped-mean metric does not reward. `rah_capped` is the same optimiser with predicted retention clipped at 1.0 inside the objective. It is run as an additional method on every model; the original `rah_sum` runs are kept unchanged and both are reported.
 - **Bootstrap:** 95% confidence intervals over items, with seeds pooled.
 - **Paired tests:** RAH vs each baseline on the same items.
 - **H1:** Spearman correlation of damage vs *a_c*.
