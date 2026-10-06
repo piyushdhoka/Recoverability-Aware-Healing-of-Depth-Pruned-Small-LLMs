@@ -59,11 +59,12 @@ fit:
   max_ceiling: 1.2            # retention cap used to bound a_c
   tau_min_frac: 0.1           # tau >= 0.1 x smallest pilot budget (no recovery speed faster than the data shows)
   trust_factor: 2.0           # no pool gets more than 2 x its largest pilot budget (no curve extrapolation)
+  objective_cap: 1.0          # rah_capped: predicted retention above 1.0 earns nothing (matches the capped-mean metric)
 
 main:
   seeds: [0, 1, 2]
   core_methods: [uniform, damage_prop, rah_sum]       # run with all seeds
-  extra_methods: [rah_maxmin, rah_proxy, last_k_uniform, linear_patch]  # first seed only
+  extra_methods: [rah_maxmin, rah_proxy, last_k_uniform, linear_patch, rah_capped]  # first seed only
   ablations: [rah_no_transfer, rah_no_scope, rah_hyp]  # first seed only
   budget_sweep: [250000, 4000000]                     # rah_sum vs uniform, first seed only
 
