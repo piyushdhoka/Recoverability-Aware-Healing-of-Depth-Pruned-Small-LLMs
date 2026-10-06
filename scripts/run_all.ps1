@@ -2,6 +2,7 @@
 #   Qwen laptop (RTX 4070):  .\scripts\run_all.ps1 -Model qwen
 #   Llama laptop (RTX 4060): .\scripts\run_all.ps1 -Model llama
 #   SmolLM2 (any laptop):    .\scripts\run_all.ps1 -Model smollm
+#   OLMo-2 (any laptop):     .\scripts\run_all.ps1 -Model olmo
 param([Parameter(Mandatory = $true)][string]$Model, [int]$From = 0)
 # "Continue", not "Stop": in Windows PowerShell 5.1 any stderr text from python (warnings, progress bars)
 # would otherwise abort the run. Failures are detected from python's exit code instead.

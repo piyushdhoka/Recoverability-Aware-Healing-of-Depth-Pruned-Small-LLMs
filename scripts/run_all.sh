@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run the whole pipeline for one model (resumable). Usage: bash scripts/run_all.sh qwen|llama|smollm [from_stage_index]
+# Run the whole pipeline for one model (resumable). Usage: bash scripts/run_all.sh qwen|llama|smollm|olmo [from_stage_index]
 # One heal job per python process (GPU memory fragments across jobs); exit code 3 = restart me.
 set -uo pipefail
 cd "$(dirname "$0")/.."
