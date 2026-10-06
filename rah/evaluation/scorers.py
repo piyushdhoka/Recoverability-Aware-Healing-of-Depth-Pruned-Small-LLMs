@@ -63,8 +63,9 @@ def _norm(v):
     return v
 
 
-def _canon_name(name: str) -> str:
-    return (name or "").replace(".", "_").strip().lower()
+def _canon_name(name) -> str:
+    # degenerate outputs can put a number / list / null in the "name" field: compare as text, never crash
+    return ("" if name is None else str(name)).replace(".", "_").strip().lower()
 
 
 def parse_call(obj):

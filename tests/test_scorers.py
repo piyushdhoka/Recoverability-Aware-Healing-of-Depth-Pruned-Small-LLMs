@@ -33,6 +33,13 @@ def test_tool(resp, expected):
     assert score_tool(resp, {"functions": FN, "ground_truth": GT})["score"] == expected
 
 
+@pytest.mark.parametrize("resp", ['{"name": 5, "arguments": {}}', '{"name": null, "arguments": {}}',
+                                  '{"name": ["get_weather"], "arguments": {"city": "Pune"}}', '{"x": 1, "y": 2}',
+                                  '[]', '"just a string"', '{"name": "get_weather", "arguments": [1, 2]}'])
+def test_tool_degenerate_outputs_score_zero_without_crashing(resp):
+    assert score_tool(resp, {"functions": FN, "ground_truth": GT})["score"] == 0.0
+
+
 def test_tool_numeric_string_equivalence():
     fn = [{"name": "f", "parameters": {"properties": {"n": {}}}}]
     assert score_tool('{"name": "f", "arguments": {"n": "5"}}', {"functions": fn, "ground_truth": [{"f": {"n": [5]}}]})["score"] == 1.0
