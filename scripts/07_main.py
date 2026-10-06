@@ -9,6 +9,8 @@ from rah.utils import read_json
 def main():
     def extra(ap):
         ap.add_argument("--only", nargs="*", default=None, help="restrict to these methods")
+        ap.add_argument("--seeds", nargs="*", type=int, default=None,
+                        help="with --only: run these seeds for the selected methods (e.g. --seeds 0 1 2)")
     args, cfg, p = cli(__doc__, extra)
     tok = tokenizer(cfg)
     spec = prune_spec(p, "main")
@@ -21,6 +23,8 @@ def main():
     jobs += [(m, s0) for m in mc["extra_methods"] + mc["ablations"] if m != "linear_patch"]  # patch: stage 4
     if args.only:
         jobs = [j for j in jobs if j[0] in args.only]
+        if args.seeds:
+            jobs = [(m, s) for m in dict.fromkeys(m for m, _ in jobs) for s in args.seeds]
     for m, s in jobs:
         if m not in alloc["methods"]:
             log.warning(f"{m}: no allocation (see stage 6 log), skipping")
