@@ -1,6 +1,6 @@
 # Research Dossier: Recoverability-Aware Healing (RAH) for Depth-Pruned Small LLMs
 
-**Working title:** *Most Damaged Is Not Most Recoverable: Recoverability-Aware Healing for Depth-Pruned Small Language Models*
+**Working title:** *Recoverability-Aware Healing: Pilot-Guided Allocation of Data Mixture and Adaptation Scope for Depth-Pruned Small Language Models*
 **Target venue:** IEEE Access (regular paper, about 10–12 pages)
 **Document date:** 2026-10-05
 **Status:** design approved; implementation starting (week 1)

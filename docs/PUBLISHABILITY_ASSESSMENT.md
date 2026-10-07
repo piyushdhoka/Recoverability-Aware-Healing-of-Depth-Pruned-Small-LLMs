@@ -1,6 +1,6 @@
 # Publishability Assessment: RAH (Recoverability-Aware Healing) Paper
 
-**Paper:** *Most Damaged Is Not Most Recoverable: Recoverability-Aware Healing for Depth-Pruned Small Language Models*
+**Paper:** *Recoverability-Aware Healing: Pilot-Guided Allocation of Data Mixture and Adaptation Scope for Depth-Pruned Small Language Models*
 **Assessed:** 2026-10-05, against `docs/RESEARCH_PLAN.md`
 **Tags:** [V] = checked against Crossref, IEEE or the publisher during this assessment. [?] = from third-party aggregators or memory, so confirm before relying on it.
 

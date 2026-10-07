@@ -1,7 +1,9 @@
 # Research Plan: Recoverability-Aware Healing of Depth-Pruned Small LLMs
 
-**Working title:** *Most Damaged Is Not Most Recoverable: Recoverability-Aware Healing for Depth-Pruned Small Language Models*
+**Working title:** *Recoverability-Aware Healing: Pilot-Guided Allocation of Data Mixture and Adaptation Scope for Depth-Pruned Small Language Models*
 **Target venue:** IEEE Access (regular paper, about 10–12 pages)
+**Title note (2026-10-07):** the earlier working title *Most Damaged Is Not Most Recoverable* was dropped. The fitted recovery ceilings correlate with damage on Llama (Spearman 0.77) and Qwen (0.67); only recovery speed is unrelated to damage.
+
 **Plan date:** 2026-10-05
 **Hardware:** 1× RTX 4060 Laptop (8 GB), plus Kaggle (2× T4, about 30 GPU-h/week)
 **Compute budget:** about 12 GPU-hours core, about 18–19 GPU-hours with a 50% buffer
