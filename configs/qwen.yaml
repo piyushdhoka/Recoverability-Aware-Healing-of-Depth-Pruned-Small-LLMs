@@ -4,3 +4,7 @@ model_id: Qwen/Qwen2.5-1.5B-Instruct
 device_note: RTX 4070 Laptop
 prune_main: 7      # 28 blocks -> 21 (25%)
 prune_light: 4     # 28 blocks -> 24 (diagnosis only)
+
+main:
+  # 4.48M = 1M heal + 3.48M pilot tokens: the compute-matched uniform baseline (run with 07_main.py --only uniform)
+  budget_sweep: [250000, 4000000, 4480000]
