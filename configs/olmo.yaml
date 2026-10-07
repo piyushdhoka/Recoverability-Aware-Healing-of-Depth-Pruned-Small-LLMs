@@ -11,4 +11,5 @@ prune_main: 2      # 16 blocks -> 14 (12.5%)
 prune_light: 1     # 16 blocks -> 15 (diagnosis only)
 
 main:
-  budget_sweep: []   # research plan: budget sweep on Qwen only
+  # 4.48M = 1M heal + 3.48M pilot tokens: the compute-matched uniform baseline (run with 07_main.py --only uniform)
+  budget_sweep: [4480000]
