@@ -128,3 +128,7 @@ results/analysis/   main, damage, tests, headline_tests, compute_matched, budget
 
 Each run file stores the allocation, training statistics, per-capability summary and every per-item score, so all
 tables can be recomputed without a GPU.
+
+## License
+
+The code is released under the [MIT License](LICENSE). The models and datasets it downloads keep their own licenses.
