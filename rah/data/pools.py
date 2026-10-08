@@ -1,7 +1,8 @@
 """Healing-pool prompts (one pool per capability + a general pool) and teacher-output quality checks.
 
 Pool item: {"id", "pool", "messages", "check"}; targets are generated later by the unpruned teacher.
-Sources are disjoint from the evaluation sets (see docs/RESEARCH_PLAN.md section 5.3).
+Sources are disjoint from the evaluation sets: glaive function schemas, Alpaca-cleaned, the GSM8K train split
+and PKU-SafeRLHF, versus JSONSchemaBench, BFCL, IFEval, the GSM8K test split, XSTest and MMLU for evaluation.
 """
 import json
 import random

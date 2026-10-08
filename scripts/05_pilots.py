@@ -1,4 +1,4 @@
-"""Stage 5: recovery pilots (each pool alone, 2 budgets, fixed scope) and scope pilots (uniform mixture,
+"""Stage 5: recovery pilots (each pool alone, 3 budgets, fixed scope) and scope pilots (uniform mixture,
 3 scopes). All pilots are evaluated on the DEV split only, so the test split never informs RAH's choices."""
 import _bootstrap  # noqa: F401
 
