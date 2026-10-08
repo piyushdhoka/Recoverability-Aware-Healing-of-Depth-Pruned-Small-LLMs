@@ -1,5 +1,8 @@
 """Stage 7: main comparison on the TEST split (core methods x seeds, extras/ablations/budget sweep x 1 seed).
-Every run is resumable: finished runs are skipped, so the script can be re-launched after a crash."""
+Every run is resumable: finished runs are skipped, so the script can be re-launched after a crash.
+
+Extra seeds for the compute-matched heal, e.g.:
+    python scripts/07_main.py --model qwen --only uniform --budgets 4480000 --sweep-seeds 1 2"""
 import _bootstrap  # noqa: F401
 
 from rah.pipeline import cli, heal_and_evaluate, log, prune_spec, tokenized_pools, tokenizer
@@ -11,6 +14,10 @@ def main():
         ap.add_argument("--only", nargs="*", default=None, help="restrict to these methods")
         ap.add_argument("--seeds", nargs="*", type=int, default=None,
                         help="with --only: run these seeds for the selected methods (e.g. --seeds 0 1 2)")
+        ap.add_argument("--budgets", nargs="*", type=int, default=None,
+                        help="restrict budget-sweep jobs to these budgets (e.g. --budgets 4480000)")
+        ap.add_argument("--sweep-seeds", nargs="*", type=int, default=None,
+                        help="seeds for budget-sweep jobs (default: the first configured seed only)")
     args, cfg, p = cli(__doc__, extra)
     tok = tokenizer(cfg)
     spec = prune_spec(p, "main")
@@ -32,13 +39,17 @@ def main():
         a = alloc["methods"][m]
         heal_and_evaluate(cfg, p, tok, spec, a["tokens"], a["scope"], s, "test", out / f"{m}_s{s}.json",
                           tokenized, {"method": m})
+    sweep_seeds = args.sweep_seeds if args.sweep_seeds else [s0]
     for b, methods in alloc["budget_sweep"].items():
+        if args.budgets and int(b) not in args.budgets:
+            continue
         for m, a in methods.items():
             if args.only and m not in args.only:
                 continue
-            heal_and_evaluate(cfg, p, tok, spec, a["tokens"], a["scope"], s0, "test",
-                              p["results"] / "budget" / f"{m}_b{b}_s{s0}.json", tokenized,
-                              {"method": m, "budget": int(b)})
+            for s in sweep_seeds:
+                heal_and_evaluate(cfg, p, tok, spec, a["tokens"], a["scope"], s, "test",
+                                  p["results"] / "budget" / f"{m}_b{b}_s{s}.json", tokenized,
+                                  {"method": m, "budget": int(b)})
     log.info("main stage complete")
 
 

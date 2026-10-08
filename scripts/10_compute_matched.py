@@ -1,6 +1,6 @@
 """Stage 10: compute-matched comparison. RAH and the baselines at the 1M-token heal (3 seeds) against uniform healing that
-also gets the pilot tokens (4.48M = 1M + 3.48M, seed 0). Paired bootstrap over test items within each capability on the
-pre-registered metrics (capped mean retention, worst-case retention), seeds pooled through per-item means."""
+also gets the pilot tokens (4.48M = 1M + 3.48M; every available seed of it). Paired bootstrap over test items within each
+capability on the primary metrics (capped mean retention, worst-case retention), seeds pooled through per-item means."""
 import _bootstrap  # noqa: F401
 import json
 from collections import defaultdict
@@ -31,19 +31,22 @@ def main():
     rng, rows = np.random.default_rng(0), []
     for name in ["llama", "qwen", "smollm", "olmo"]:
         res = REPO / "results" / name
-        cm_path = res / "budget" / f"uniform_b{BUDGET}_s0.json"
-        if not cm_path.exists():
-            print(f"{name}: no {cm_path.name} yet, skipping")
+        cm_files = sorted((res / "budget").glob(f"uniform_b{BUDGET}_s*.json"))
+        if not cm_files:
+            print(f"{name}: no uniform_b{BUDGET}_s*.json yet, skipping")
             continue
         caps = load_config(name)["capabilities"]
         base = J(res / "diagnosis" / "eval_base_test.json")["summary"]
-        cm = [J(cm_path)]
-        s = cm[0]["summary"]
-        r_cm = np.array([s[c] / base[c] for c in caps])
-        rows.append({"model": name, "method": f"uniform@{BUDGET // 1000}k", "seeds": 1,
+        cm = [J(f) for f in cm_files]
+        im = {c: item_means(cm, c) for c in caps}                 # seeds pooled per item, as for the 1M methods
+        r_cm = np.array([np.mean(list(im[c].values())) / base[c] for c in caps])
+        per_seed = [np.minimum([r["summary"][c] / base[c] for c in caps], 1).mean() for r in cm]
+        rows.append({"model": name, "method": f"uniform@{BUDGET // 1000}k", "seeds": len(cm),
                      "capped_mean": float(np.minimum(r_cm, 1).mean()), "worst": float(r_cm.min()),
+                     "capped_mean_seed_sd": float(np.std(per_seed, ddof=1)) if len(cm) > 1 else float("nan"),
                      **{c: float(v) for c, v in zip(caps, r_cm)},
-                     "over_refusal": s["safe_over_refusal"], "harmful_refusal": s["safe_harmful_refusal"]})
+                     "over_refusal": float(np.mean([r["summary"]["safe_over_refusal"] for r in cm])),
+                     "harmful_refusal": float(np.mean([r["summary"]["safe_harmful_refusal"] for r in cm]))})
         for m in METHODS_1M:
             files = sorted((res / "main").glob(f"{m}_s*.json"))
             if not files:

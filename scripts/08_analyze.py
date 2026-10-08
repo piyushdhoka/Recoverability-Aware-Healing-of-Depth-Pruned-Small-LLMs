@@ -90,7 +90,8 @@ def analyze_model(name: str, out_dir, n_boot: int):
     for f in sorted((res / "budget").glob("*.json")):
         r = read_json(f)
         vals = [r["summary"][c] / base[c] for c in caps if base[c] > 0]
-        budget.append({"model": name, "method": r["method"], "budget": r["budget"], "mean_ret": float(np.mean(vals))})
+        budget.append({"model": name, "method": r["method"], "budget": r["budget"], "seed": r.get("seed", 0),
+                       "mean_ret": float(np.mean(vals))})
     tables["budget"] = pd.DataFrame(budget)
 
     figures(name, out_dir, caps, dmg, fit, main_df, res)
